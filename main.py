@@ -39,23 +39,24 @@ def health_check():
 
 
 def main():
-    paper = get_papers(db)
-    if not paper:
-        logger.info("No new papers found.")
-        return
-    summary = fetch_summary(paper)
-    interesting_points = fetch_interesting_points(paper)
-    text = f"""
-*タイトル: {paper.title}*\n\n
-*概要*\n{summary}\n\n
-*リンク*\n{paper.url}\n\n
-*提出日*\n{paper.submitted}\n\n
-*以下、面白いポイント*\n{interesting_points}\n\n
-ChatPDFで読む: https://www.chatpdf.com/ \n\n
-論文を読む: {paper.url}.pdf
-    """
-    post_to_slack(text)
-    logger.info(f"Posted a paper: {paper.title}")
+    try:
+        paper = get_papers(db)
+        summary = fetch_summary(paper)
+        interesting_points = fetch_interesting_points(paper)
+        text = f"""
+            *タイトル: {paper.title}*\n\n
+            *概要*\n{summary}\n\n
+            *リンク*\n{paper.url}\n\n
+            *提出日*\n{paper.submitted}\n\n
+            *以下、面白いポイント*\n{interesting_points}\n\n
+            ChatPDFで読む: https://www.chatpdf.com/ \n\n
+            論文を読む: {paper.url}.pdf
+        """
+        post_to_slack(text)
+        logger.info(f"Posted a paper: {paper.title}")
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        
 
 
 scheduler = AsyncIOScheduler(timezone="Asia/Tokyo")

@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "post-research-papers-to-slack"
+version = "0.1.0"
+description = "post research schalar papers to slack"
+authors = ["tatsuya0926 <miyata.tatsuya1209@gmail.com>"]
+readme = "README.md"
+
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+apscheduler = "^3.11.0"
+arxiv = "^2.1.3"
+asyncio = "^3.4.3"
+fastapi = "^0.115.12"
+ipykernel = "^6.25.2"
+ollama = "^0.4.7"
+openai = "^0.28"
+pytz = "^2025.2"
+python-dotenv = "^1.1.0"
+slack-bolt = "^1.23.0"
+slack-sdk = "^3.35.0"
+tqdm = "^4.64.1"
+uvicorn = "^0.34.0"
