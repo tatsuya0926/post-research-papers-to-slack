@@ -2,22 +2,24 @@
 
 ## 📕概要
 
-**arXiv** から特定のキーワードや著者に関連する論文を定期的に検索し、Slack にわかりやすく投稿する BOT です。  
-1時間ごとに指定したチャンネルへ最新論文の要約付きで投稿します。   
+**arXiv** から特定のキーワードや著者に関連する論文を定期的に検索し、Slack にわかりやすく投稿する BOT です。
+一定時間ごとに指定したチャンネルへ最新論文の要約付きで投稿します。
 
 元（fork先）とのソースコードの変更点として以下3点を行います。
-- **OpenAI**のAPIを用いたLLM（GPT-4o）を利用していましたが、ここでは**ollama**を用いたローカルLLM（llama）を用いて要約等の処理を行わせます。これによってAPI料金を気にすることなく、言語modelを制限されることなく利用することができます。
-- 上記のツールの他にarXivの論文URLを貼ると、その論文の要約を投稿します。
-- バージョン管理ツールを**Poetry**に変更します。
+- **GPT-4oをollamaによるローカルLLMに変更:** **OpenAI**のAPIを用いたLLM（GPT-4o）を利用していましたが、ここでは**ollama**を用いたローカルLLM（llama）を用いて要約等の処理を行わせます。これによってAPI料金を気にすることなく、言語modelを制限されることなく利用することができます。
+- **自動化ツールをRailwayからcronに変更:** PaaSとしてRailwayを使用しているが、使用した分料金がかかってしまうのでこの自動化ツールを**cron**(Windowsならタスクスケジューラ)で置き換えます。
+- **バージョン管理ツールとしてPoetryを利用:** pyenv等で管理していたパッケージを管理のしやすさを理由にバージョン管理ツールを**Poetry**に変更します。
 
-カスタマイズ
-- LLMの実行についてollama, GPTを利用していますが、transformersのpiplineAPIを用いて実行することも可能です。その場合は自分で書き換えてください。
+カスタマイズ性について
+- LLMの実行についてollama, ~~GPT~~を利用していますが、transformersのpiplineAPIを用いて実行することも可能です。その場合は自分で書き換えてください。
+- 自動化ツールとして使えればなんでもいいのでcronに拘らず、RailwayでもGithub Actionsでもなんでもいいです。
+- 現状論文検索APIをArXiv APIで行なっているのでArXivに登録されていない論文は検索できません。その場合別の論文検索APIを利用してください。
 
-注意点（大事！！）
+**注意点（大事！！）**
 - **GPUを利用する前提の設計です。**(使用しないとLLMの処理速度が格段に長くなります。)
 - **ollamaを使用する際はRAMの容量を必ず確認すること。**(ローカル環境にインストールしたモデルを呼び出すには少なくともモデルの容量を超えていないと呼び出すことができません。)
 - API版の利用の際は料金に注意してください。読み込む論文のtoken数が決して少なくはない量ではあるので。
-- LLMを利用しているので当然ですが、ハルシネーションがある前提で利用すること。
+- LLMを利用しているので当然ですが、ハルシネーション前提で利用してください。
 
 
 ## 🚀 主な特徴
@@ -60,18 +62,9 @@
 
 - Slack Bot の作成（`SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` の取得）  
   👉 [Slack App の作成方法](https://www.pci-sol.com/business/service/product/blog/lets-make-slack-app/)
-- [Railway](https://railway.app) のアカウント作成と CLI インストール  
-  👉 [Railway CLI ドキュメント](https://docs.railway.app/develop/cli)
 
----
 
 ### 📦 インストール手順
-
-Python 環境で以下のコマンドを実行してください：
-
-```
-pip install -r requirements.txt
-```
 
 推奨環境：
 
@@ -79,7 +72,24 @@ pip install -r requirements.txt
 - pip 23.0.1  
 - railwayapp 3.0.21
 
----
+
+Poetryがインストールされている状態で以下のコマンドを実行してください：
+```bash
+poetry init
+poetry install
+```
+
+一応テストとして使用するので、Python環境（または仮想環境）をJupyter NotebookやJupyter Labで使えるカーネルとして登録してください：
+```bash
+poetry shell
+python -m ipykernel install --user --name=post-research-papers-to-slack-py3.10
+```
+
+もし`poetry shell`が効かない場合、Poetryのshellプラグインをインストールしたのち上記を実行してください：
+```bash
+poetry self add poetry-plugin-shell
+```
+
 
 ### 🧪 ローカル環境での動作確認
 
@@ -87,40 +97,13 @@ pip install -r requirements.txt
 
 - `SLACK_BOT_TOKEN`：Slack Bot のトークン  
 - `SLACK_CHANNEL`：投稿先チャンネルの ID  
-- ~~`OPENAI_API_KEY`：OpenAI API キー~~ # OpenAIのAPIを使用しないので利用しない
+- ~~`OPENAI_API_KEY`：OpenAI API キー~~ # OpenAIのAPIを使用しないので利用しない。
 
-設定後、以下のコマンドで起動できます：
-
-```
-make run
-```
-
-※ PC がスリープになると停止するため、常時稼働したい場合は次のデプロイ手順を参照してください。
-
----
-
-## ☁️ Railway にデプロイする
-
-まず Railway CLI をログイン＆リンク：
-
-```
-railway login  
-railway link
-```
-
-次に以下を実行してデプロイ：
-
-```
-make deploy
-```
-
----
 
 ## 🎉 Enjoy Your Paper Reading Life!
 
 Slack で気軽に論文をチェックし、要約・翻訳・対話ですばやくキャッチアップしましょう！
 
----
 
 ## 📄 ライセンス
 
