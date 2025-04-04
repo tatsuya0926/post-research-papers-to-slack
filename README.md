@@ -62,16 +62,14 @@
 
 - Slack Bot の作成（`SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` の取得）  
   👉 [Slack App の作成方法](https://www.pci-sol.com/business/service/product/blog/lets-make-slack-app/)
-
+- ollama のインストールとLLMのダウンロード  
+  👉 [ollamaの導入方法](https://zenn.dev/hellorusk/books/e56548029b391f/viewer/ollama)
 
 ### 📦 インストール手順
 
 推奨環境：
 
 - Python 3.10.6  
-- pip 23.0.1  
-- railwayapp 3.0.21
-
 
 Poetryがインストールされている状態で以下のコマンドを実行してください：
 ```bash
@@ -89,6 +87,12 @@ python -m ipykernel install --user --name=post-research-papers-to-slack-py3.10
 ```bash
 poetry self add poetry-plugin-shell
 ```
+
+次に、ollamaがインストールされている状態かつ起動している状態で以下のコマンドを実行してください：
+```bash
+ollama run schroneko/gemma-2-2b-jpn-it
+```
+なお使用しているLLMはgemma 2 2Bを日本語でfine tuningしたもので英語・日本語に対応しているものを使用しています。特段これを使用しなければならないわけではないので、以下のURLから検索して選ぶことが可能です。[ollama対応モデル一覧](https://ollama.com/search)
 
 
 ### 🧪 ローカル環境での動作確認
