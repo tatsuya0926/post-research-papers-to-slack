@@ -61,23 +61,24 @@
 以下の準備をあらかじめ行ってください（リンク参照）：
 
 - Slack Bot の作成（`SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` の取得）  
+  以下のリンクの手順1から17, 26から28をなぞれば設定できると思います。（古い記事なのでslackの設定部分が多少異なる場合があります。）  
   👉 [Slack App の作成方法](https://www.pci-sol.com/business/service/product/blog/lets-make-slack-app/)
 - ollama のインストールとLLMのダウンロード  
   👉 [ollamaの導入方法](https://zenn.dev/hellorusk/books/e56548029b391f/viewer/ollama)
 
 ### 📦 インストール手順
-
+#### Python環境構築
 推奨環境：
 
 - Python 3.10.6  
+- Poetry 2.1.1
 
 Poetryがインストールされている状態で以下のコマンドを実行してください：
 ```bash
-poetry init
 poetry install
 ```
 
-一応テストとして使用するので、Python環境（または仮想環境）をJupyter NotebookやJupyter Labで使えるカーネルとして登録してください：
+一応テストとしてノートブックを使用するので、Python環境（または仮想環境）をJupyter NotebookやJupyter Labで使えるカーネルとして登録してください：
 ```bash
 poetry shell
 python -m ipykernel install --user --name=post-research-papers-to-slack-py3.10
@@ -88,12 +89,17 @@ python -m ipykernel install --user --name=post-research-papers-to-slack-py3.10
 poetry self add poetry-plugin-shell
 ```
 
+#### ローカルLLMのダウンロード
 次に、ollamaがインストールされている状態かつ起動している状態で以下のコマンドを実行してください：
 ```bash
 ollama run schroneko/gemma-2-2b-jpn-it
 ```
-なお使用しているLLMはgemma 2 2Bを日本語でfine tuningしたもので英語・日本語に対応しているものを使用しています。特段これを使用しなければならないわけではないので、以下のURLから検索して選ぶことが可能です。[ollama対応モデル一覧](https://ollama.com/search)
+なお使用しているLLMはgemma 2 2Bを日本語でfine tuningしたもので英語・日本語に対応しているものを使用しています。特段これを使用しなければならないわけではないので、以下のURLから検索して選ぶことが可能です。  
+[ollama対応モデル一覧](https://ollama.com/search)
 
+#### 自動化ツールの導入
+main.pyのmain()メソッドを一定時間で起動するようにコマンドを設定すればよいです。  
+各々の自動化ツールを利用してください。
 
 ### 🧪 ローカル環境での動作確認
 
