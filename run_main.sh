@@ -1,6 +1,7 @@
 #!/bin/bash
 # 作業ディレクトリに移動
-cd /Users/***/post-research-papers-to-slack
+SCRIPT_DIR=$(cd "$(dirname "$0")"; pwd)
+cd "$SCRIPT_DIR"
 
 # logファイルの作成
 LOG_DIR="./logs"
@@ -14,6 +15,6 @@ if [ ! -f "$LOG_FILE" ]; then
 fi
 
 # 仮想環境を起動
-source /Users/***/post-research-papers-to-slack/.venv/bin/activate
+source "$SCRIPT_DIR/.venv/bin/activate"
 
 python main.py >> "$LOG_FILE" 2>&1
