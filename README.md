@@ -97,10 +97,6 @@ ollama run schroneko/gemma-2-2b-jpn-it
 なお使用しているLLMはgemma 2 2Bを日本語でfine tuningしたもので英語・日本語に対応しているものを使用しています。特段これを使用しなければならないわけではないので、以下のURLから検索して選ぶことが可能です。  
 [ollama対応モデル一覧](https://ollama.com/search)
 
-#### 自動化ツールの導入
-main.pyのmain()メソッドを一定時間で起動するようにコマンドを設定すればよいです。  
-各々の自動化ツールを利用してください。
-
 ### 🧪 ローカル環境での動作確認
 
 `.env.example` を `.env` にコピーし、以下の環境変数を設定：
@@ -109,6 +105,39 @@ main.pyのmain()メソッドを一定時間で起動するようにコマンド�
 - `SLACK_CHANNEL`：投稿先チャンネルの ID  
 - ~~`OPENAI_API_KEY`：OpenAI API キー~~ # OpenAIのAPIを使用しないので利用しない。
 
+### 🤖 自動化ツールの導入
+#### 権限の付与
+`run_main.sh`を一定時間で起動するようにコマンドを設定すればよいです。  
+まず、`run_main.sh`に実行権限があるか確認します。
+```bash
+cd /post-research-papers-to-slack/script
+ls -l run_main.sh
+```
+以下のように表示されていればOKです。（-xが付いていれば実行権限がある）
+```sql
+-rwxr-xr-x  1 ***  staff  1234  4  1 00:00 run_main.sh
+```
+
+なければ以下で実行権限を付与します。
+```bash
+chmod +x run_main.sh
+```
+
+#### cronの設定
+例えば、1時間ごとに定期実行するには以下のようにします。
+```bash
+crontab -e
+```
+でcrontabを編集モードにします。
+```
+0 */1 * * * /Users/***/post-research-papers-to-slack/script/run_main.sh
+```
+のように追記し、`esc`キー→:wq→`enter`でcrontabに保存されます。(どうやらcronでは絶対パスを指定しないといけないらしい)
+なお
+```bash
+crontab -l
+```
+で登録されているか確認できます。
 
 ## 🎉 Enjoy Your Paper Reading Life!
 

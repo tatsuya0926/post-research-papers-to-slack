@@ -1,9 +1,6 @@
 import os
-from fastapi import FastAPI
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 import logging
 from database.database import Database
 from config import SLACK_API_TOKEN, SLACK_CHANNEL, DATABASE_NAME
@@ -17,9 +14,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
-app = FastAPI()
-
 db = Database(DATABASE_NAME)
 db.init_database()
 
@@ -31,12 +25,6 @@ def post_to_slack(text):
         response = client.chat_postMessage(channel=SLACK_CHANNEL, text=text)
     except SlackApiError as e:
         logger.error(f"Error posting to Slack: {e}")
-
-
-@app.get("/")
-def health_check():
-    return {"status": "OK"}
-
 
 def main():
     try:
@@ -56,20 +44,6 @@ def main():
         logger.info(f"Posted a paper: {paper.title}")
     except Exception as e:
         logger.error(f"Error: {e}")
-        
-
-
-scheduler = AsyncIOScheduler(timezone="Asia/Tokyo")
-scheduler.add_job(main, IntervalTrigger(hours=3))
-scheduler.start()
-
-
-@app.on_event("shutdown")
-def shutdown_event():
-    scheduler.shutdown()
-
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    main()
