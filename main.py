@@ -20,9 +20,11 @@ db.init_database()
 client = WebClient(token=SLACK_API_TOKEN)
 
 
-def post_to_slack(text):
+def post_to_slack(main_text, reply_text):
     try:
-        response = client.chat_postMessage(channel=SLACK_CHANNEL, text=text)
+        main_response = client.chat_postMessage(channel=SLACK_CHANNEL, text=main_text)
+        thread_ts = main_response["ts"]
+        reply_response = client.chat_postMessage(channel=SLACK_CHANNEL, text=reply_text, thread_ts=thread_ts)
     except SlackApiError as e:
         logger.error(f"Error posting to Slack: {e}")
 
@@ -31,16 +33,19 @@ def main():
         paper = get_papers(db)
         summary = fetch_summary(paper)
         interesting_points = fetch_interesting_points(paper)
-        text = f"""
-            *タイトル: {paper.title}*\n\n
-            *概要*\n{summary}\n\n
-            *リンク*\n{paper.url}\n\n
-            *提出日*\n{paper.submitted}\n\n
-            *以下、面白いポイント*\n{interesting_points}\n\n
-            ChatPDFで読む: https://www.chatpdf.com/ \n\n
-            論文を読む: {paper.url}.pdf
+        main_text = f"""
+        *タイトル:* {paper.title}
+        *著者名:* {paper.authors}
+        *リンク:* {paper.url}
         """
-        post_to_slack(text)
+
+        reply_text = f"""
+        *概要:*\n{summary}
+        *提出日:* {paper.submitted}
+        *面白いポイント:*\n{interesting_points}
+        ChatPDFで読む: https://www.chatpdf.com/
+        """
+        post_to_slack(main_text, reply_text)
         logger.info(f"Posted a paper: {paper.title}")
     except Exception as e:
         logger.error(f"Error: {e}")
