@@ -44,7 +44,7 @@ def fetch_interesting_points(result):
             {
                 "role": "user",
                 "content": f"""
-                以下の論文がどういう点で面白いかについて初学者にも分かりやすく解説し、論文の本文を読みたくなるように魅力づけをして促して下さい。\n論文タイトル: {result.title}\n概要: {result.summary}"""
+                以下の論文がどういう点で面白いかについて理系専門家向けに解説し、論文の本文を読みたくなるように魅力づけをして促して下さい。\n論文タイトル: {result.title}\n概要: {result.summary}"""
             },
         ],
     )
@@ -75,45 +75,54 @@ def get_papers(
     keyword: List[str] = SEARCH_KEYWORDS,
     authors: List[str] = SEARCH_AUTHORS,
     max_results: int = 20,
+    max_pages: int = 5,
 ):
-    title_query = " OR ".join([f'ti:"{k}"' for k in keyword])
-    author_query = ""
-
+    title_query = " OR ".join(f'ti:"{k}"' for k in keyword)
     if authors:
-        author_query = " OR ".join([f'au:"{a}"' for a in authors])
+        author_query = " OR ".join(f'au:"{a}"' for a in authors)
         query = f"({title_query}) OR ({author_query})"
     else:
         query = title_query
-    exclude_ids = db.get_excluded_papers()
 
-    search = arxiv.Search(
-        query=query,
-        max_results=max_results,
-        sort_by=arxiv.SortCriterion.SubmittedDate,
-        sort_order=arxiv.SortOrder.Descending,
-    )
+    exclude_ids = set(db.get_excluded_papers())
+    tz = pytz.timezone("Asia/Tokyo")
 
-    results = []
-    for result in search.results():
-        if result.entry_id in exclude_ids:
-            continue
-        submitted_jst = result.published.astimezone(pytz.timezone("Asia/Tokyo"))
-        submitted_formatted = submitted_jst.strftime("%Y年%m月%d日 %H時%M分%S秒")
-        authors_str = ", ".join([author.name for author in result.authors])
-        results.append(
-            ArxivResponse(
+    for page in range(max_pages):
+        total_to_fetch = max_results * (page + 1)
+        search = arxiv.Search(
+            query=query,
+            max_results=total_to_fetch,
+            sort_by=arxiv.SortCriterion.SubmittedDate,
+            sort_order=arxiv.SortOrder.Descending,
+        )
+
+        all_results = list(search.results())
+
+        start_idx = page * max_results
+        end_idx = start_idx + max_results
+        page_results = all_results[start_idx:end_idx]
+
+        for result in page_results:
+            if result.entry_id in exclude_ids:
+                continue
+
+            submitted_jst = result.published.astimezone(tz)
+            submitted_fmt = submitted_jst.strftime("%Y年%m月%d日 %H時%M分%S秒")
+            authors_str = ", ".join(a.name for a in result.authors)
+
+            resp = ArxivResponse(
                 entry_id=result.entry_id,
                 title=result.title,
                 authors=authors_str,
                 summary=result.summary,
                 url=result.pdf_url,
-                submitted=submitted_formatted,
+                submitted=submitted_fmt,
             )
-        )
-    if not results:
-        return
-    picked_paper = results[0]
-    db.add_paper(picked_paper.entry_id)
-    logger.info(f"INSERT : {picked_paper.entry_id} / {picked_paper.title}")
+            db.add_paper(result.entry_id)
+            logger.info(f"INSERT : {result.entry_id} / {result.title}")
+            return resp
 
-    return picked_paper
+        if len(page_results) < max_results:
+            break
+
+    raise LookupError(f"No new papers found for query: {query!r}")

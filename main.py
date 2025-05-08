@@ -43,7 +43,6 @@ def main():
         *概要:*\n{summary}
         *提出日:* {paper.submitted}
         *面白いポイント:*\n{interesting_points}
-        ChatPDFで読む: https://www.chatpdf.com/
         """
         post_to_slack(main_text, reply_text)
         logger.info(f"Posted a paper: {paper.title}")
